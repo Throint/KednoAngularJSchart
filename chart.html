@@ -1,243 +1,284 @@
 <!DOCTYPE html>
 <html ng-app="MyApp">
-<head>
-    
-    <base href="https://demos.telerik.com/kendo-ui/line-charts/index">
-    <style>html { font-size: 14px; font-family: Arial, Helvetica, sans-serif; }</style>
-    <title></title>
-    
-    
-    
 
+<head>
+  <base href="https://demos.telerik.com/kendo-ui/line-charts/index">
+  <style>
+    html {
+      font-size: 14px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+  </style>
+  <title></title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.default-v2.min.css" />
+
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  <script src="https://kendo.cdn.telerik.com/2021.2.616/js/kendo.all.min.js"></script>
 </head>
 <body>
-    <div ng-controller="divController">
-        <select ng-init="List = data[0]" ng-model="List" ng-options="user as user.Surname for user in data"ng-change="change(List)" >
-        
-        </select>
+  <div ng-controller="divController">
+    <!-- <select ng-init="List = data[0]" ng-model="List" ng-options="user as user.Surname for user in data"ng-change="change(List)" >
+                </select> -->
+    <input id="dropDown" />
     <div id="example">
-    <div class="demo-section k-content wide">
-        <div id="chart" style="background: center no-repeat url('../content/shared/styles/world-map.png');"></div>
-   
-   
-       
-    
-   
-   <button id="ShowChart">Chart</button>
-   
-    </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-  
-    <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.default-v2.min.css" />
+      <div class="demo-section k-content wide">
+        <div id="chart" style="background:#f7f8f5"></div>
+
+      </div>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+
+      <!-- <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.default-v2.min.css" />
      <script src="https://kendo.cdn.telerik.com/2021.2.616/js/jquery.min.js"></script>       
-    <script src="https://kendo.cdn.telerik.com/2021.2.616/js/kendo.all.min.js"></script>
-    <script>
-         var myApp=angular.module('MyApp', []);
-    angular.module("MyApp", []).controller("divController", function ($scope) {
-        $scope.data=[];
-        $scope.List={};
-        $scope.data=RandomGenerator();
+    <script src="https://kendo.cdn.telerik.com/2021.2.616/js/kendo.all.min.js"></script> -->
+      <script>
+        var myApp = angular.module('MyApp', []);
+        angular.module("MyApp", []).controller("divController", function ($scope) {
+          $scope.data = [];
+          $scope.List = {};
+          $scope.Salary = [];
+          $scope.Average = [];
+          $scope.Approx = [];
+          $scope.Name = "";
+          $scope.currUser = 0;
+          $scope.avaibleData = RandomGenerator();
 
- $scope.change=function(s)
-{
- 
-  if(s!=null)
-  {
-       $scope.data=[];
-  $scope.data.push(s.Salary);
-  
+          createChart($scope.avaibleData[0].Name, $scope.avaibleData[0].Salary, $scope.avaibleData[0].Average, $scope.avaibleData[0].Approx);
 
-  $scope.series=[];
-  $scope.series.push(s.Surname);
+          $("#dropDown").kendoDropDownList({
+            dataSource: getObjects($scope.avaibleData),
+            dataTextField: "Surname",
+            dataValueField: "id",
+            change: function () {
+              var item = this.dataItem(this.selectedIndex);
+              var scope = angular.element("#chart").scope();
+              var new_sal = scope.avaibleData[item.id].Salary;
+              var new_apr = scope.avaibleData[item.id].Approx;
+              var new_avr = scope.avaibleData[item.id].Average;
+              var new_name = scope.avaibleData[item.id].Name;
+              var new_surname = scope.avaibleData[item.id].Surname;
+              var modelToPass = {
+                Name: new_name,
+                Surname: new_surname,
+                Salary: new_sal,
+                Average: new_avr,
+                Approx: new_apr,
 
-  $scope.data.push(s.Average);
-  $scope.series.push("Average value");
-
-//   $scope.data.push(s.Approx);
-//   $scope.series.push("Approximated");
-
- 
-  var curUserIndex= 0;
-  for(var iter=0; iter<$scope.data.length;iter++)
-  {
-    if(($scope.data[iter].Name==s.Name ) &&($scope.data[iter].Surname==s.Surname))
-    {
-      curUserIndex=iter;
-      break;
-    }
-  }
-  $scope.max= getMax($scope.data[curUserIndex]);
-  $scope.min=getMin($scope.data[curUserIndex]);
-}
-  $scope.currUser=curUserIndex;
-  
-  
-}
-
-    //    $(document).ready(createChart($scope.data.Name, $scope.data.Salary));
-    $("#ShowChart").click(function(){
-
-
-
-        createChart($scope.data[0].Name, $scope.data[0].Salary);
-    });
-        $(document).bind("kendo:skinChange", createChart);
-    });
-    function createChart(x, y) {
-            $("#chart").kendoChart({
-                title: {
-                    text: ""
-                },
-                legend: {
-                    position: "bottom"
-                },
-                chartArea: {
-                    background: ""
-                },
-                seriesDefaults: {
-                    type: "line",
-                    style: "smooth"
-                },
-                series: [{
-                    name: x,
-                    data: y
-                },
-               
-            ],
-                valueAxis: {
-                    labels: {
-                        format: "{0}"
-                    },
-                    line: {
-                        visible: false
-                    },
-                    axisCrossingValue: -10
-                },
-                categoryAxis: {
-                    categories: ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                    majorGridLines: {
-                        visible: false
-                    },
-                    labels: {
-                        rotation: "auto"
-                    }
-                },
-                tooltip: {
-                    visible: true,
-                    format: "{0}",
-                    template: "#= series.name #: #= value #"
+              }
+              scope.change(modelToPass);
+            }
+          });
+          $scope.change = function (s) {
+            if (s != null) {
+              $scope.Salary = s.Salary;
+              $scope.Name = s.Name;
+              $scope.Approx = s.Approx;
+              $scope.Average = s.Average;
+              var curUserIndex = 0;
+              for (var iter = 0; iter < $scope.data.length; iter++) {
+                if (($scope.avaibleData[iter].Name == s.Name) && ($scope.avaibleData[iter].Surname == s.Surname)) {
+                  curUserIndex = iter;
+                  break;
                 }
-            });
-        }
-       
-        
-function getMax(arr)
-{
-  var max=0;
- var tmp=[];
- for(var i=0;i<arr.length;i++)
- {
-   tmp.push(arr[i]);
- }
-  tmp.sort(function(a, b) {
-  return a - b;
-});
- var max=tmp[tmp.length-1];
- var index=arr.indexOf(max);
-  return ((index+1)>9)? `${max} at 01/${index+1}`:`${max} at 01/0${index+1}`;
-}
-
-function getMin(arr)
-{
-  var tempArr=[];
-  for(var i=0;i<arr.length;i++)
-  {
-    tempArr.push(arr[i]);
-  }
-  tempArr.sort(function(a, b) {
-  return a - b;
-});
-var min =tempArr[0];
-var index= arr.indexOf(min);
-return ((index+1)>9)? `${min} at 01/${index+1}`:`${min} at 01/0${index+1}`;
- 
-}
-function RandomGenerator(){
-    var obj=[];
-    for(var i=0;i<10;i++)
-    {
-        var salariesPerYear=[];
-        for(var j=0;j<12;j++)
-        {
-        var salary= Math.random()*1500+i+j;
-        salariesPerYear.push(salary);
-        }
-       // var approx=getApprox(salariesPerYear);
-        var avrSalary=0;
-        for(var z=0;z<12;z++)
-        {
-          avrSalary+=salariesPerYear[z];
-        }
-        avrSalary/=12;
-        var avrArr=[];
-        for(var avrI=0;avrI<12;avrI++)
-        {
-          avrArr.push(avrSalary);
-        }
-            var tmp={
-                Name:`Test0${i}`,
-                Surname: `User0${i}`,
-                Salary:salariesPerYear,
-                Average:avrArr,
-              //  Approx:approx
+              }
+              $scope.max = getMax($scope.avaibleData[curUserIndex].Salary);
+              $scope.min = getMin($scope.avaibleData[curUserIndex].Salary);
             }
-    
-            obj.push(tmp);
-    }
-   
-    return obj;
-}
-        function RandomGenerator(){
-    var obj=[];
-    for(var i=0;i<10;i++)
-    {
-        var salariesPerYear=[];
-        for(var j=0;j<12;j++)
-        {
-        var salary= Math.random()*1500+i+j;
-        salariesPerYear.push(salary);
-        }
-      //  var approx=getApprox(salariesPerYear);
-        var avrSalary=0;
-        for(var z=0;z<12;z++)
-        {
-          avrSalary+=salariesPerYear[z];
-        }
-        avrSalary/=12;
-        var avrArr=[];
-        for(var avrI=0;avrI<12;avrI++)
-        {
-          avrArr.push(avrSalary);
-        }
-            var tmp={
-                Name:`Test0${i}`,
-                Surname: `User0${i}`,
-                Salary:salariesPerYear,
-                Average:avrArr
-               // Approx:approx
+            $scope.currUser = curUserIndex;
+            createChart($scope.Name, $scope.Salary, $scope.Average, $scope.Approx);
+            // $scope.$digest();
+          }
+          $(document).bind("kendo:skinChange", createChart);
+        });
+        function createChart(x, y, z, apr) {
+          $("#chart").kendoChart({
+            title: {
+              text: ""
+            },
+            legend: {
+              position: "bottom"
+            },
+            chartArea: {
+              background: ""
+            },
+            seriesDefaults: {
+              type: "line",
+              style: "smooth"
+            },
+            series: [{
+              name: "Salary",
+              data: y
+            },
+            {
+              name: "Average",
+              data: z
+            },
+            {
+              name: "Approx",
+              data: apr,
+              color: "gray"
             }
-    
+
+            ],
+            valueAxis: {
+              labels: {
+                format: "{0}"
+              },
+              line: {
+                visible: false
+              },
+              axisCrossingValue: -10
+            },
+            categoryAxis: {
+              categories: ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"],
+              majorGridLines: {
+                visible: false
+              },
+              labels: {
+                rotation: "auto"
+              }
+            },
+            tooltip: {
+              visible: true,
+              format: "{0}",
+              template: "#= series.name #: #= value #"
+            }
+          });
+        }
+        function getMax(arr) {
+          var max = 0;
+          var tmp = [];
+          for (var i = 0; i < arr.length; i++) {
+            tmp.push(arr[i]);
+          }
+          tmp.sort(function (a, b) {
+            return a - b;
+          });
+          var max = tmp[tmp.length - 1];
+          var index = arr.indexOf(max);
+          return ((index + 1) > 9) ? `${max} at 01/${index + 1}` : `${max} at 01/0${index + 1}`;
+        }
+        function getMin(arr) {
+          var tempArr = [];
+          for (var i = 0; i < arr.length; i++) {
+            tempArr.push(arr[i]);
+          }
+          tempArr.sort(function (a, b) {
+            return a - b;
+          });
+          var min = tempArr[0];
+          var index = arr.indexOf(min);
+          return ((index + 1) > 9) ? `${min} at 01/${index + 1}` : `${min} at 01/0${index + 1}`;
+        }
+        function RandomGenerator() {
+          var obj = [];
+          for (var i = 0; i < 10; i++) {
+            var salariesPerYear = [];
+            for (var j = 0; j < 12; j++) {
+              var salary = Math.random() * 1500 + i + j;
+              salariesPerYear.push(salary);
+            }
+            var approx = getApprox(salariesPerYear);
+            var avrSalary = 0;
+            for (var z = 0; z < 12; z++) {
+              avrSalary += salariesPerYear[z];
+            }
+            avrSalary /= 12;
+            var avrArr = [];
+            for (var avrI = 0; avrI < 12; avrI++) {
+              avrArr.push(avrSalary);
+            }
+            var tmp = {
+              Name: `Test0${i}`,
+              Surname: `User0${i}`,
+              Salary: salariesPerYear,
+              Average: avrArr,
+              Approx: approx
+            }
             obj.push(tmp);
-    }
-   
-    return obj;
-}
-    </script>
+          }
+          return obj;
+        }
+        function RandomGenerator() {
+          var obj = [];
+          for (var i = 0; i < 10; i++) {
+            var salariesPerYear = [];
+            for (var j = 0; j < 12; j++) {
+              var salary = Math.random() * 1500 + i + j;
+              salariesPerYear.push(salary);
+            }
+            var approx = getApprox(salariesPerYear);
+            var avrSalary = 0;
+            for (var z = 0; z < 12; z++) {
+              avrSalary += salariesPerYear[z];
+            }
+            avrSalary /= 12;
+            var avrArr = [];
+            for (var avrI = 0; avrI < 12; avrI++) {
+              avrArr.push(avrSalary);
+            }
+            var tmp = {
+              Name: `Test0${i}`,
+              Surname: `User0${i}`,
+              Salary: salariesPerYear,
+              Average: avrArr,
+              Approx: approx
+            }
+
+            obj.push(tmp);
+          }
+          return obj;
+        }
+
+        function getObjects(arr) {
+          var objArr = [];
+
+          for (var i = 0; i < arr.length; i++) {
+            var tmp = {
+              id: i,
+              Surname: arr[i].Surname,
+              Name: arr[i].Name,
+              Salary: arr[i].Salary,
+              Average: arr[i].Average,
+              Approx: arr[i].Approx
+            }
+            if (tmp !== undefined) {
+              var model = {
+                modelData: tmp
+              };
+              objArr.push(tmp);
+            }
+          }
+          return objArr;
+        }
+        function getApprox(arr) {
+          var _appr = [];
+
+          for (var z = 0; z < arr.length - 1; z++) {
+            _appr.push(arr[z]);
+
+          }
+          _appr.push(arr[arr.length - 1]);
+          for (var ttt = 1; ttt < _appr.length - 1; ttt += 2) {
+            var tmp=_appr[ttt];
+            _appr[ttt] = ((_appr[ttt - 1] + _appr[ttt + 1]) / 2);
+            tmp-=_appr[ttt];   
+             
+           _appr[ttt]+=((0.15)*tmp);
+          }
+          _appr[_appr.length - 1] = ((_appr[_appr.length - 1] + _appr[_appr.length - 2]) / 2);
+          return _appr;
+
+        }
+
+      </script>
     </div>
-    </div>
+  </div>
 
 
-    
+
 
 </body>
+
 </html>
